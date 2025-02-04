@@ -1,15 +1,25 @@
-import './App.css'
+import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import SignUp from './pages/SignUp';
+import Login from './pages/Login';
+import Home from './pages/Home';
 
-function App() {
-
+const App = () => {
+  const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
 
   return (
-    <>
-      <h1 className="text-3xl font-bold underline">
-      Hello world!
-    </h1>
-    </>
-  )
-}
+    <Router>
+      <Routes>
+        <Route path="/signup" element={<SignUp />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/home" element={isAuthenticated ? <Home /> : <Navigate to="/login" />} />
+        <Route path="/" element={<Navigate to="/login" />} />
+        <Route path="*" element={<Navigate to="/login" />} />
+      </Routes>
+      <ToastContainer />
+    </Router>
+  );
+};
 
-export default App
+export default App;
