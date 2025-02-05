@@ -73,16 +73,31 @@ const Home = () => {
     setTotal('');
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Logic to handle the transaction submission
-    console.log({
-      crypto: selectedCrypto,
-      transactionType,
-      amount,
-      pricePerCoin,
-      total,
-    });
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+          console.error('No token found');
+          return;
+      }
+        console.log('Token:', token);
+        const transactionData = {
+            receiver: selectedCrypto.name,
+            amount,
+        };
+        console.log('Token envoyé dans la requête:', token);
+        const response = await axios.post('http://localhost:3000/api/transactions', transactionData, {
+          headers: {
+              'Authorization': `Bearer ${token}` // Assurez-vous que le token est correctement formaté
+          }
+          
+      });
+      
+        console.log('Transaction saved:', response.data);
+    } catch (error) {
+        console.error('Error saving transaction:', error);
+    }
     handleCloseModal();
   };
 

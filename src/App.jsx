@@ -12,10 +12,9 @@ const App = () => {
     <Router>
       <Routes>
         <Route path="/signup" element={<SignUp />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/home" element={isAuthenticated ? <Home /> : <Navigate to="/login" />} />
-        <Route path="/" element={<Navigate to="/login" />} />
-        <Route path="*" element={<Navigate to="/login" />} />
+        <Route path="/" element={<Login />} />
+        <Route path="/home" element={isAuthenticated ? <Home /> : <Navigate to="/" />} />
+        
       </Routes>
       <ToastContainer />
     </Router>

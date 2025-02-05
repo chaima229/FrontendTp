@@ -12,7 +12,7 @@ const Login = () => {
     e.preventDefault();
     try {
       const response = await axios.post('http://localhost:3000/auth/login', { email, password });
-      console.log(response.data);
+      localStorage.setItem('token', response.data.token); // Stocker le token dans le localStorage
       localStorage.setItem('isAuthenticated', 'true');
       toast.success('Login successful');
       navigate('/home'); // Redirection vers la page Home après une connexion réussie
