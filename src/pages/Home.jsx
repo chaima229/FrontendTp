@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
 import Navbar from '../components/Navbar';
 import Sidebar from '../components/Sidebar';
 import Modal from '../components/Modal';
@@ -16,6 +18,7 @@ const Home = () => {
   const [total, setTotal] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [cryptosPerPage] = useState(10);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchCryptocurrencies = async () => {
@@ -95,8 +98,11 @@ const Home = () => {
       });
       
         console.log('Transaction saved:', response.data);
+        toast.success('Transaction created successfully');
+        navigate('/transactions'); // Redirection vers la page des transactions après une création réussie
     } catch (error) {
         console.error('Error saving transaction:', error);
+        toast.error('Failed to create transaction');
     }
     handleCloseModal();
   };
