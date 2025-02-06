@@ -68,45 +68,80 @@ const Home = () => {
   };
 
   const handleCryptoChange = (e) => {
-    const selectedId = e.target.value;
+    const selectedId = parseInt(e.target.value, 10); // Convertir en entier
     const crypto = cryptocurrencies.find((crypto) => crypto.id === selectedId);
-    setSelectedCrypto(crypto);
-    setPricePerCoin(crypto.quote.USD.price.toFixed(2));
-    setAmount('');
-    setTotal('');
+    if (crypto) {
+      setSelectedCrypto(crypto);
+      setPricePerCoin(crypto.quote.USD.price.toFixed(2));
+      setAmount('');
+      setTotal('');
+    }
   };
+  
+
+  // const handleSubmit = async (e) => {
+  //   e.preventDefault();
+  //   try {
+  //     const token = localStorage.getItem('token');
+  //     if (!token) {
+  //         console.error('No token found');
+  //         return;
+  //     }
+  //       console.log('Token:', token);
+  //       const transactionData = {
+  //           receiver: selectedCrypto.name,
+  //           amount,
+  //       };
+  //       console.log('Token envoyé dans la requête:', token);
+  //       const response = await axios.post('http://localhost:3000/api/transactions', transactionData, {
+  //         headers: {
+  //             'Authorization': `Bearer ${token}` // Assurez-vous que le token est correctement formaté
+  //         }
+          
+  //     });
+      
+  //       console.log('Transaction saved:', response.data);
+  //       toast.success('Transaction created successfully');
+  //       navigate('/transactions'); // Redirection vers la page des transactions après une création réussie
+  //   } catch (error) {
+  //       console.error('Error saving transaction:', error);
+  //       toast.error('Failed to create transaction');
+  //   }
+  //   handleCloseModal();
+  // };
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       const token = localStorage.getItem('token');
       if (!token) {
-          console.error('No token found');
-          return;
+        console.error('No token found');
+        return;
       }
-        console.log('Token:', token);
-        const transactionData = {
-            receiver: selectedCrypto.name,
-            amount,
-        };
-        console.log('Token envoyé dans la requête:', token);
-        const response = await axios.post('http://localhost:3000/api/transactions', transactionData, {
-          headers: {
-              'Authorization': `Bearer ${token}` // Assurez-vous que le token est correctement formaté
-          }
-          
+  
+      const transactionData = {
+        crypto: selectedCrypto.name,
+        amount,
+        type: transactionType, // Ajoute le type d'opération
+      };
+  
+      const response = await axios.post('http://localhost:3000/api/transactions', transactionData, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
       });
-      
-        console.log('Transaction saved:', response.data);
-        toast.success('Transaction created successfully');
-        navigate('/transactions'); // Redirection vers la page des transactions après une création réussie
+  
+      console.log('Transaction saved:', response.data);
+      toast.success('Transaction created successfully');
+      navigate('/transactions'); 
     } catch (error) {
-        console.error('Error saving transaction:', error);
-        toast.error('Failed to create transaction');
+      console.error('Error saving transaction:', error);
+      toast.error('Failed to create transaction');
     }
     handleCloseModal();
   };
-
+  
   const filteredCryptocurrencies = cryptocurrencies.filter((crypto) =>
     crypto.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -246,6 +281,7 @@ const Home = () => {
                       </option>
                     ))}
                   </select>
+
                 </div>
                 <div className="mb-4">
                   <label className="block text-sm font-medium text-gray-300">Amount</label>

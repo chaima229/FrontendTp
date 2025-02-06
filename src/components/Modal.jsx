@@ -5,7 +5,7 @@ const Modal = ({ onClose, children }) => {
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-30">
       <div className="bg-[#0D1421] p-6 rounded shadow-lg w-1/3 text-start text-white relative">
         <button
-          className="absolute top-0 right-0 mt-4 mr-4 text-gray-500 hover:text-gray-700"
+          className="absolute h-30% w-30% top-0 right-0 mt-4 mr-4 text-red-500 hover:text-gray-700"
           onClick={onClose}
         >
           &times;

@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import Navbar from '../components/Navbar';
 import Sidebar from '../components/Sidebar';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faTrash, faEdit } from '@fortawesome/free-solid-svg-icons';
 
 const Transactions = () => {
     const [transactions, setTransactions] = useState([]);
@@ -92,6 +94,29 @@ const Transactions = () => {
       return crypto ? `https://s2.coinmarketcap.com/static/img/coins/64x64/${crypto.id}.png` : '';
     };
 
+    const handleDelete = async (transactionId) => {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          console.error('No token found');
+          return;
+        }
+        await axios.delete(`http://localhost:3000/api/transactions/${transactionId}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        setTransactions(transactions.filter(transaction => transaction._id !== transactionId));
+      } catch (error) {
+        console.error('Error deleting transaction:', error);
+      }
+    };
+  
+    const handleEdit = (transactionId) => {
+      // Logique pour éditer la transaction
+      console.log('Edit transaction:', transactionId);
+    };
+
   return (
     <div className="flex flex-col min-h-screen bg-gray-900 text-white">
       <Navbar />
@@ -164,6 +189,7 @@ const Transactions = () => {
                       <th className="py-2 px-4 border-b text-left">Receiver</th>
                       <th className="py-2 px-4 border-b text-left">Amount</th>
                       <th className="py-2 px-4 border-b text-left">Date</th>
+                      <th className="py-2 px-4 border-b text-left">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -177,11 +203,19 @@ const Transactions = () => {
                           <td className="py-2 px-4 border-b">{transaction.receiver}</td>
                           <td className="py-2 px-4 border-b">${transaction.amount}</td>
                           <td className="py-2 px-4 border-b">{transaction.timestamp}</td>
+                          <td className="py-2 px-4 border-b">
+                            <button onClick={() => handleEdit(transaction._id)} className="text-blue-500 hover:text-blue-700 mr-2">
+                              <FontAwesomeIcon icon={faEdit} />
+                            </button>
+                            <button onClick={() => handleDelete(transaction._id)} className="text-red-500 hover:text-red-700">
+                              <FontAwesomeIcon icon={faTrash} />
+                            </button>
+                          </td>
                         </tr>
                       ))
                     ) : (
                       <tr>
-                        <td colSpan="5" className="py-2 px-4 text-center">No transactions found</td>
+                        <td colSpan="6" className="py-2 px-4 text-center">No transactions found</td>
                       </tr>
                     )}
                   </tbody>
