@@ -1,12 +1,13 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import axios from 'axios';
 import Navbar from '../components/Navbar';
 import Sidebar from '../components/Sidebar';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrash, faEdit } from '@fortawesome/free-solid-svg-icons';
+import { TransactionContext } from '../transactionContexte';
 
 const Transactions = () => {
-    const [transactions, setTransactions] = useState([]);
+    const { transactions, addTransaction, updateTransaction, deleteTransaction } = useContext(TransactionContext);
     const [totalAmount, setTotalAmount] = useState(0);
     const [view, setView] = useState('overview');
     const [overviewData, setOverviewData] = useState({
@@ -18,6 +19,11 @@ const Transactions = () => {
     const [cryptocurrencies, setCryptocurrencies] = useState([]);
     const [username, setUsername] = useState('');
     const [priceChange, setPriceChange] = useState(0);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [currentTransaction, setCurrentTransaction] = useState({
+      receiver: '',
+      amount: 0
+    });
 
     useEffect(() => {
       const fetchTransactions = async () => {
@@ -32,7 +38,7 @@ const Transactions = () => {
               'Authorization': `Bearer ${token}`
             }
           });
-          setTransactions(response.data);
+          response.data.forEach(transaction => addTransaction(transaction));
           const total = response.data.reduce((acc, transaction) => acc + parseFloat(transaction.amount), 0);
           setTotalAmount(total);
   
@@ -87,7 +93,7 @@ const Transactions = () => {
       fetchTransactions();
       fetchCryptocurrencies();
       fetchUser();
-    }, []);
+    }, [addTransaction]);
 
     const getCryptoLogo = (cryptoName) => {
       const crypto = cryptocurrencies.find(c => c.name === cryptoName);
@@ -106,15 +112,39 @@ const Transactions = () => {
             'Authorization': `Bearer ${token}`
           }
         });
-        setTransactions(transactions.filter(transaction => transaction._id !== transactionId));
+        deleteTransaction(transactionId);
       } catch (error) {
         console.error('Error deleting transaction:', error);
       }
     };
   
-    const handleEdit = (transactionId) => {
-      // Logique pour éditer la transaction
-      console.log('Edit transaction:', transactionId);
+    const handleEdit = (transaction) => {
+      setCurrentTransaction(transaction);
+      setIsModalOpen(true);
+    };
+
+    const handleSave = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          console.error('No token found');
+          return;
+        }
+        await axios.put(`http://localhost:3000/api/transactions/${currentTransaction._id}`, currentTransaction, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        updateTransaction(currentTransaction._id, currentTransaction);
+        setIsModalOpen(false);
+      } catch (error) {
+        console.error('Error updating transaction:', error);
+      }
+    };
+
+    const handleChange = (e) => {
+      const { name, value } = e.target;
+      setCurrentTransaction({ ...currentTransaction, [name]: value });
     };
 
   return (
@@ -204,7 +234,7 @@ const Transactions = () => {
                           <td className="py-2 px-4 border-b">${transaction.amount}</td>
                           <td className="py-2 px-4 border-b">{transaction.timestamp}</td>
                           <td className="py-2 px-4 border-b">
-                            <button onClick={() => handleEdit(transaction._id)} className="text-blue-500 hover:text-blue-700 mr-2">
+                            <button onClick={() => handleEdit(transaction)} className="text-blue-500 hover:text-blue-700 mr-2">
                               <FontAwesomeIcon icon={faEdit} />
                             </button>
                             <button onClick={() => handleDelete(transaction._id)} className="text-red-500 hover:text-red-700">
@@ -225,6 +255,52 @@ const Transactions = () => {
           )}
         </div>
       </div>
+      {isModalOpen && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-black p-4 rounded w-96">
+            <h2 className="text-xl font-bold mb-4">Edit Transaction</h2>
+            <label className="block mb-2">
+              Cryptocurrency:
+              <select
+                name="receiver"
+                value={currentTransaction.receiver}
+                onChange={handleChange}
+                className="block w-full mt-1 p-2 border rounded bg-black"
+              >
+                {cryptocurrencies.map((crypto) => (
+                  <option key={crypto.id} value={crypto.name}>
+                    {crypto.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="block mb-2 ">
+              Amount:
+              <input
+                type="number"
+                name="amount"
+                value={currentTransaction.amount}
+                onChange={handleChange}
+                className="block w-full mt-1 p-2 border rounded bg-black"
+              />
+            </label>
+            <div className="flex justify-end mt-4">
+              <button
+                onClick={() => setIsModalOpen(false)}
+                className="bg-gray-500 text-white px-4 py-2 rounded mr-2"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSave}
+                className="bg-blue-500 text-white px-4 py-2 rounded"
+              >
+                Save
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
